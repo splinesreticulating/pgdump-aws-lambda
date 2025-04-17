@@ -148,6 +148,24 @@ If you supply `SECRETS_MANAGER_SECRET_ID`, you can ommit the 'PG\*' keys, and th
 
 You can provide overrides in your event to any PG\* keys as event parameters will take precedence over secret values.
 
+#### SSM Parameter Store-based configuration
+
+If you want to load configuration or secrets from AWS Systems Manager Parameter Store, you can provide a list of parameter names in the event via the `SSM_PARAMETER_NAMES` field. Only one external configuration source (IAM, Secrets Manager, or SSM) is used per invocation: if IAM or Secrets Manager fields are present, those take precedence and SSM is ignored.
+
+**Example:**
+
+```json
+{
+    "SSM_PARAMETER_NAMES": ["/my/app/PGUSER", "/my/app/PGPASSWORD", "/my/app/PGHOST", "/my/app/PGDATABASE"],
+    "S3_BUCKET": "db-backups",
+    "ROOT": "hourly-backups"
+}
+```
+
+The fetched parameter values will be merged into the event config, using only the last segment of each parameter name as the config key (e.g., '/my/app/PGUSER' becomes 'PGUSER'). If there are conflicts, event fields override SSM values.
+
+The Lambda execution role must have permission to call `ssm:GetParameters` for the specified parameter names (e.g., by attaching the AWS managed policy `AmazonSSMReadOnlyAccess`).
+
 #### Multiple databases
 
 If you'd like to export multiple databases in a single event, you can add a comma-separated list of database names to the PGDATABASE setting. The results will return in a list.
