@@ -164,6 +164,8 @@ If you want to load configuration or secrets from AWS Systems Manager Parameter 
 
 The fetched parameter values will be merged into the event config, using only the last segment of each parameter name as the config key (e.g., '/my/app/PGUSER' becomes 'PGUSER'). If there are conflicts, event fields override SSM values.
 
+If any requested SSM parameter is missing or an error occurs during fetching, the function will log an error and fall back to using only the provided event configuration (i.e., SSM values will not be merged).
+
 The Lambda execution role must have permission to call `ssm:GetParameters` for the specified parameter names (e.g., by attaching the AWS managed policy `AmazonSSMReadOnlyAccess`).
 
 #### Multiple databases
