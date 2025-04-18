@@ -55,4 +55,19 @@ describe('decorateWithSsmParameters', () => {
         const result = await decorateWithSsmParameters(baseConfig)
         expect(result).to.deep.equal(baseConfig)
     })
+
+    it('should return baseConfig if any requested SSM parameter is missing', async () => {
+        AWSMOCK.mock('SSM', 'getParameters', (params, cb) => {
+            cb(null, {
+                Parameters: [
+                  { Name: '/my/app/PGUSER', Value: 'bar' }
+                ],
+                InvalidParameters: []
+            })
+        })
+        // PGUSER will be found, PGPASSWORD will be missing
+        const baseConfig = { SSM_PARAMETER_NAMES: ['/my/app/PGUSER', '/my/app/PGPASSWORD'] }
+        const result = await decorateWithSsmParameters(baseConfig)
+        expect(result).to.deep.equal(baseConfig)
+    })
 })
